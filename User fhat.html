@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌍 Global Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background: #1e1e1e;
+    }
+    #chat div {
+      background: #2c2c2c;
+      margin: 5px;
+      padding: 10px;
+      border-radius: 10px;
+      word-wrap: break-word;
+    }
+    #inputBox {
+      display: flex;
+      padding: 10px;
+      gap: 5px;
+      background: #111;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    input {
+      flex: 1;
+      background: #2c2c2c;
+      color: white;
+    }
+    button {
+      background: #00f0ff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #usernameBox {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #000000dd;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #usernameBox input {
+      width: 80%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="usernameBox">
+  <h2>Enter your name to join 🌍 Global Chat</h2>
+  <input type="text" id="usernameInput" placeholder="Your name">
+  <button onclick="startChat()">Join Chat</button>
+</div>
+
+<div id="chat"></div>
+
+<div id="inputBox">
+  <input type="text" id="messageInput" placeholder="Type a message...">
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+  // ✅ Tumhara Firebase config yaha lag gaya
+  const firebaseConfig = {
+    apiKey: "AIzaSyDYCLLaE5HqN8XTHodLH3uyW3dvB40XuU",
+    authDomain: "chatapp-656c3.firebaseapp.com",
+    databaseURL: "https://chatapp-656c3-default-rtdb.firebaseio.com",
+    projectId: "chatapp-656c3",
+    storageBucket: "chatapp-656c3.appspot.com",
+    messagingSenderId: "154467092540",
+    appId: "1:154467092540:web:8c8a2ce4ae998569239b39",
+    measurementId: "G-207F9E53T5"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let username = "";
+
+  function startChat() {
+    const input = document.getElementById("usernameInput");
+    if (input.value.trim() !== "") {
+      username = input.value.trim();
+      document.getElementById("usernameBox").style.display = "none";
+    }
+  }
+
+  function sendMessage() {
+    const msg = document.getElementById("messageInput").value.trim();
+    if (msg === "") return;
+    const time = new Date().toLocaleTimeString();
+    db.ref("globalChat").push({
+      name: username,
+      message: msg,
+      time: time
+    });
+    document.getElementById("messageInput").value = "";
+  }
+
+  // 👁️ Show messages in real time
+  const chatBox = document.getElementById("chat");
+  db.ref("globalChat").limitToLast(100).on("child_added", snapshot => {
+    const data = snapshot.val();
+    const div = document.createElement("div");
+    div.innerHTML = `<b>${data.name}</b> <small>🕒 ${data.time}</small><br>${data.message}`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+</script>
+
+</body>
+</html>
